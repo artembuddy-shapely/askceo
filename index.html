@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AskCEO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:           #07090F;
+      --surface:      #0D1220;
+      --accent:       #E9B94C;
+      --accent-dim:   rgba(233, 185, 76, 0.12);
+      --accent-glow:  rgba(233, 185, 76, 0.07);
+      --border:       rgba(233, 185, 76, 0.11);
+      --border-hi:    rgba(233, 185, 76, 0.32);
+      --text:         #EEE8DC;
+      --muted:        rgba(238, 232, 220, 0.42);
+      --danger:       rgba(255, 100, 100, 0.85);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── background grid ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(233, 185, 76, 0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(233, 185, 76, 0.028) 1px, transparent 1px);
+      background-size: 56px 56px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── top glow ── */
+    .glow {
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 720px;
+      height: 480px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(233, 185, 76, 0.09) 0%, transparent 72%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── noise overlay ── */
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.022;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 300px 300px;
+    }
+
+    /* ── card ── */
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px;
+      position: relative;
+      z-index: 1;
+      box-shadow:
+        0 0 0 1px rgba(233, 185, 76, 0.04),
+        0 48px 96px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 32px 24px; border-radius: 20px; }
+    }
+
+    /* ── logo ── */
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 44px;
+      font-weight: 400;
+      letter-spacing: -0.025em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .logo em { color: var(--accent); font-style: normal; }
+
+    .tagline {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
+    }
+
+    /* ── context blurb ── */
+    .blurb {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+
+    /* ── fields ── */
+    .field { margin-bottom: 18px; }
+
+    .field label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 9px;
+    }
+
+    .field label .opt {
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 11px;
+      color: rgba(238, 232, 220, 0.22);
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    textarea {
+      min-height: 138px;
+      padding: 15px 18px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    input[type="text"] {
+      padding: 14px 18px;
+      height: 52px;
+    }
+
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--border-hi);
+      background: var(--accent-glow);
+      box-shadow: 0 0 0 4px rgba(233, 185, 76, 0.06);
+    }
+
+    textarea::placeholder, input[type="text"]::placeholder {
+      color: rgba(238, 232, 220, 0.18);
+    }
+
+    textarea.invalid { border-color: rgba(255, 100, 100, 0.45) !important; }
+
+    /* ── submit button ── */
+    .submit-btn {
+      width: 100%;
+      height: 56px;
+      background: var(--accent);
+      color: #080604;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      position: relative;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(233, 185, 76, 0.32);
+    }
+
+    .submit-btn:active:not(:disabled) { transform: translateY(0); }
+
+    .submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* spinner */
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(8, 6, 4, 0.25);
+      border-top-color: #080604;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+
+    .submit-btn.loading .btn-label { display: none; }
+    .submit-btn.loading .spinner { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── error ── */
+    .error-msg {
+      font-size: 12px;
+      color: var(--danger);
+      text-align: center;
+      margin-top: 12px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    /* ── footer note ── */
+    .card-footer {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: rgba(238, 232, 220, 0.28);
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── SUCCESS VIEW ── */
+    .success-view { display: none; text-align: center; }
+    .success-view.show { display: block; }
+
+    .check-ring {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      border: 1px solid var(--border-hi);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 8px auto 30px;
+      animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .check-ring svg {
+      width: 36px;
+      height: 36px;
+      stroke: var(--accent);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.4); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .success-hed {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 38px;
+      font-weight: 400;
+      margin-bottom: 12px;
+      animation: riseIn 0.4s ease 0.1s both;
+    }
+
+    .success-sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      animation: riseIn 0.4s ease 0.2s both;
+    }
+
+    @keyframes riseIn {
+      from { transform: translateY(10px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .another-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 30px;
+      border: 1px solid var(--border-hi);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      animation: riseIn 0.4s ease 0.3s both;
+    }
+
+    .another-btn:hover {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+<div class="glow"></div>
+<div class="noise"></div>
+
+<div class="card">
+
+  <!-- Header (always visible) -->
+  <div class="logo">Ask<em>CEO</em></div>
+  <div class="tagline">Direct line · No filter</div>
+
+  <div class="divider"></div>
+
+  <!-- ── FORM VIEW ── -->
+  <div class="form-view" id="formView">
+    <p class="blurb">We're turning the page — new direction, new chapter. Ask anything on your mind. Every question reaches the top.</p>
+
+    <div class="field">
+      <label for="question">Your question</label>
+      <textarea id="question" placeholder="What's on your mind?"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="name">
+        Your name &nbsp;<span class="opt">— optional, anonymous by default</span>
+      </label>
+      <input type="text" id="name" placeholder="e.g. Jane Smith" autocomplete="off" />
+    </div>
+
+    <button class="submit-btn" id="submitBtn">
+      <span class="btn-label">
+        Send question
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.5 8h11M9.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div class="spinner"></div>
+    </button>
+
+    <div class="error-msg" id="errorMsg">Something went wrong. Please try again.</div>
+
+    <div class="card-footer">All questions are confidential and go directly to the CEO.</div>
+  </div>
+
+  <!-- ── SUCCESS VIEW ── -->
+  <div class="success-view" id="successView">
+    <div class="check-ring">
+      <svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 9.5-9.5"/></svg>
+    </div>
+    <div class="success-hed">Question received!</div>
+    <p class="success-sub">Your question is on its way to the top.<br>Thank you for being part of this journey.</p>
+    <button class="another-btn" onclick="resetForm()">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5m0-1.5v4l2-2-2-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Ask another question
+    </button>
+  </div>
+
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  //  ⬇️  Paste your deployed Google Apps Script URL here
+  // ─────────────────────────────────────────────────────
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwjGJf1arozqdll-MnIjVafevezXYu28Q-3iMXJkBx6z8PgzhYg1Z9zljONSC8gqCzb/exec';
+  // ─────────────────────────────────────────────────────
+
+  const questionEl  = document.getElementById('question');
+  const nameEl      = document.getElementById('name');
+  const submitBtn   = document.getElementById('submitBtn');
+  const errorMsg    = document.getElementById('errorMsg');
+  const formView    = document.getElementById('formView');
+  const successView = document.getElementById('successView');
+
+  async function submitQuestion() {
+    const question = questionEl.value.trim();
+    const name     = nameEl.value.trim();
+
+    // validate
+    if (!question) {
+      questionEl.classList.add('invalid');
+      questionEl.focus();
+      setTimeout(() => questionEl.classList.remove('invalid'), 1600);
+      return;
+    }
+
+    errorMsg.classList.remove('show');
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
+
+    try {
+      // mode: 'no-cors' — response is opaque but data is delivered
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question,
+          name: name || 'Anonymous',
+          timestamp: new Date().toISOString()
+        })
+      });
+      showSuccess();
+    } catch {
+      errorMsg.classList.add('show');
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+    }
+  }
+
+  function showSuccess() {
+    formView.style.display = 'none';
+    successView.classList.add('show');
+  }
+
+  function resetForm() {
+    questionEl.value = '';
+    nameEl.value = '';
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+    errorMsg.classList.remove('show');
+    successView.classList.remove('show');
+    formView.style.display = '';
+    questionEl.focus();
+  }
+
+  // Cmd/Ctrl+Enter to submit
+  questionEl.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') submitQuestion();
+  });
+
+  submitBtn.addEventListener('click', submitQuestion);
+</script>
+
+</body>
+</html>
